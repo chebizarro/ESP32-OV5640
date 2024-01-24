@@ -15,7 +15,10 @@
  ***********************************************************************************************************/
 
 #include "i2c_master.h"
+#include "driver/i2c_master.h"
 #include <stdio.h>
+
+static i2c_master_bus_handle_t bus_handle;
 
 /**
   * @brief  初始化I2C主机
@@ -26,16 +29,42 @@
   */
 void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num)
 {
-    i2c_config_t i2c_conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = sda_num,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = scl_num,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 400000,
+
+    i2c_master_bus_config_t i2c_mst_config = {
+            .clk_source = I2C_CLK_SRC_DEFAULT,
+            .i2c_port = I2c_num,
+            .scl_io_num = scl_num,
+            .sda_io_num = sda_num,
+            .glitch_ignore_cnt = 7,
+            .flags.enable_internal_pullup = true,
     };
-    i2c_param_config(I2c_num, &i2c_conf);
-    i2c_driver_install(I2c_num, I2C_MODE_MASTER, 0, 0, 0);
+
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
+
+}
+
+
+esp_err_t read_16(uint8_t address, uint16_t* result) {
+    bool success = false;
+    uint8_t retries = 3;
+    uint8_t addr[2] = {address };
+    uint8_t buffer[2] = { 0, 0 };
+
+    while ((success == false) && (retries > 0))
+    {
+        esp_err_t err = i2c_master_transmit_receive(bus_handle, addr, sizeof(addr), buffer, 2, -1);
+
+        if (err == ESP_OK) {
+            *result = ((uint16_t)buffer[0] << 8) | buffer[1];
+            success = true;
+        } else {
+            ESP_LOGW(TAG, "Failed to read i2c device at address: %X", address);
+            retries--;
+            esp_rom_delay_us( 500 );
+        }
+    }
+
+    return success ? ESP_OK : ESP_ERR_INVALID_ARG;
 }
 
 /**

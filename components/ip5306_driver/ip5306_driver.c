@@ -40,6 +40,10 @@ static uint8_t Ip5306_I2c_Read(uint8_t reg_addr, uint8_t len, uint8_t *data_buf)
     i2c_cmd_link_delete(cmd);
     I2c_Check_Err(ret);
     return ret;
+
+    
+
+
 }
 
 /**
