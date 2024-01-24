@@ -17,13 +17,14 @@
 #ifndef __I2C_MASTER_H
 #define __I2C_MASTER_H
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "../../main/include/S003_config.h"
 
 #define I2C_SCL_IO                  S003_I2C0_SCL_IO
 #define I2C_SDA_IO                  S003_I2C0_SDA_IO
 #define I2C_MASTER_NUM              S003_I2C0_I2C_NUM
+#define I2C_MASTER_FREQ_HZ          400000
 
 #define WRITE_BIT                   I2C_MASTER_WRITE
 #define READ_BIT                    I2C_MASTER_READ 
@@ -40,6 +41,10 @@
   * @retval void
   */
 void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num);
+
+
+esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_bus_handle_t dev_handle);
+
 
 /**
   * @brief  检测设备是否存在

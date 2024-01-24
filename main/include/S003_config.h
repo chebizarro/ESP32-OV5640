@@ -13,7 +13,7 @@
 #define __S003_CONFIG_H_
 
 #include "driver/gpio.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 
 // I2C0
 #define S003_I2C0_SCL_IO                    GPIO_NUM_4

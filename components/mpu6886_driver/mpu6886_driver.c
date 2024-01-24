@@ -8,10 +8,15 @@
 #include "../i2c_master/include/i2c_master.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 
 enum Gscale Gyscale = GFS_2000DPS;
 enum Ascale Acscale = AFS_8G;
+
+static const char *TAG = "MPU6886";
+
+static i2c_master_dev_handle_t dev_handle;
+
 
 /**
   * @brief  MPU6886读n个字节
@@ -22,27 +27,14 @@ enum Ascale Acscale = AFS_8G;
   */
 static esp_err_t MPU6886I2C_Read_NBytes(uint8_t reg_Addr, uint8_t len, uint8_t *read_Buffer)
 {
-    esp_err_t ret = ESP_OK;
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (MPU6886_ADDRESS << 1) | WRITE_BIT, 1);
-	i2c_master_write_byte(cmd, reg_Addr, 1);
-	i2c_master_stop(cmd);
-	ret = i2c_master_cmd_begin(MPU6886_I2C_MASTER_NUM, cmd, 1000/portTICK_PERIOD_MS);
-	i2c_cmd_link_delete(cmd);
-
-    cmd = i2c_cmd_link_create();
-    if(len == 0)
-		return ESP_FAIL;
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (MPU6886_ADDRESS << 1) | READ_BIT, ACK_CHECK_EN);
-    i2c_master_read(cmd, read_Buffer, len, I2C_MASTER_LAST_NACK);
-    i2c_master_stop(cmd);
-    ret |= i2c_master_cmd_begin(MPU6886_I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    return ret;
+    return i2c_master_transmit_receive(
+              dev_handle,
+              (const uint8_t *)&reg_Addr,
+              1,
+              read_Buffer,
+              len,
+              -1
+          );
 }
 
 /**
@@ -54,18 +46,12 @@ static esp_err_t MPU6886I2C_Read_NBytes(uint8_t reg_Addr, uint8_t len, uint8_t *
   */
 static esp_err_t MPU6886I2C_Write_NBytes(uint8_t reg_Addr, uint8_t len, uint8_t *write_Buffer)
 {
-    esp_err_t ret = ESP_OK;
-
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (MPU6886_ADDRESS << 1) | WRITE_BIT, ACK_CHECK_EN);
-	i2c_master_write_byte(cmd, reg_Addr, ACK_CHECK_EN);
-    i2c_master_write(cmd, write_Buffer, len, ACK_CHECK_EN);
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(MPU6886_I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    return ret;
+    return i2c_master_transmit(
+      dev_handle,
+      write_Buffer,
+      len,
+      -1
+    );
 }
 
 /**

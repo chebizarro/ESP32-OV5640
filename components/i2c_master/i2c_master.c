@@ -31,41 +31,28 @@ void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num)
 {
 
     i2c_master_bus_config_t i2c_mst_config = {
-            .clk_source = I2C_CLK_SRC_DEFAULT,
-            .i2c_port = I2c_num,
-            .scl_io_num = scl_num,
-            .sda_io_num = sda_num,
-            .glitch_ignore_cnt = 7,
-            .flags.enable_internal_pullup = true,
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = I2c_num,
+        .scl_io_num = scl_num,
+        .sda_io_num = sda_num,
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
     };
 
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
-
 }
 
+esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_bus_handle_t dev_handle)
+{
+    i2c_device_config_t dev_cfg = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address = dev_address,
+        .scl_speed_hz = I2C_MASTER_FREQ_HZ,
+    };
 
-esp_err_t read_16(uint8_t address, uint16_t* result) {
-    bool success = false;
-    uint8_t retries = 3;
-    uint8_t addr[2] = {address };
-    uint8_t buffer[2] = { 0, 0 };
-
-    while ((success == false) && (retries > 0))
-    {
-        esp_err_t err = i2c_master_transmit_receive(bus_handle, addr, sizeof(addr), buffer, 2, -1);
-
-        if (err == ESP_OK) {
-            *result = ((uint16_t)buffer[0] << 8) | buffer[1];
-            success = true;
-        } else {
-            ESP_LOGW(TAG, "Failed to read i2c device at address: %X", address);
-            retries--;
-            esp_rom_delay_us( 500 );
-        }
-    }
-
-    return success ? ESP_OK : ESP_ERR_INVALID_ARG;
+    return i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle);
 }
+
 
 /**
   * @brief  检测设备是否存在

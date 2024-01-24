@@ -21,7 +21,7 @@ static const char* TAG = "sccb";
 
 #define LITTLETOBIG(x)          ((x<<8)|(x>>8))
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 
 #define SCCB_FREQ               100000           /*!< I2C master frequency*/
 #define WRITE_BIT               I2C_MASTER_WRITE /*!< I2C master write */

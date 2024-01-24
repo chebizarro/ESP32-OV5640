@@ -17,7 +17,7 @@
 #ifndef __IP5306_DRIVER_H
 #define __IP5306_DRIVER_H
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "../../main/include/S003_config.h"
