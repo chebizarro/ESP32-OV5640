@@ -42,6 +42,10 @@ static i2c_master_bus_handle_t bus_handle;
 
 int SCCB_Init(int pin_sda, int pin_scl)
 {
+    if (bus_handle) {
+      return 0;
+    }
+
     ESP_LOGI(TAG, "pin_sda %d pin_scl %d\n", pin_sda, pin_scl);
 
     i2c_master_bus_config_t i2c_mst_config = {
@@ -86,7 +90,6 @@ uint8_t SCCB_Probe()
     while(slave_addr < 0x7f) {
         esp_err_t err = i2c_master_probe(bus_handle, slave_addr, -1);
         if(err == ESP_OK) {
-            //ESP_SLAVE_ADDR = slave_addr;
             return SCCB_Set_Device(slave_addr);
         }
         slave_addr++;
@@ -136,22 +139,23 @@ uint8_t SCCB_Write(uint8_t slv_addr, uint8_t reg, uint8_t data)
 
 uint8_t SCCB_Read16(uint8_t slv_addr, uint16_t reg)
 {
-    uint8_t addr[2] = { reg };
-    uint8_t buffer[2] = { 0, 0 };
+    uint16_t reg_htons = LITTLETOBIG(reg);
+    uint8_t *addr = (uint8_t *)&reg_htons;
+    uint8_t buffer = 0;
 
     SCCB_Set_Device(slv_addr);
 
     esp_err_t ret = i2c_master_transmit_receive(
         dev_handle,
         addr,
-        sizeof(addr),
-        (const uint8_t *)&buffer,
-        2,
+        1,
+        &buffer,
+        sizeof(buffer),
         -1
     );
 
     if(ret != ESP_OK) {
-        //ESP_LOGE(TAG, "W [%04x]=%02x fail\n", reg, buffer);
+        ESP_LOGE(TAG, "W [%04x]=%d fail\n", reg, buffer);
     }
 
     return buffer;

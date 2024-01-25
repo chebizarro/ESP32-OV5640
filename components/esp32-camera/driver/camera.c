@@ -1047,7 +1047,7 @@ esp_err_t camera_probe(const camera_config_t* config, camera_model_t* out_camera
         id->PID = SCCB_Read16(s_state->sensor.slv_addr, REG16_CHIDH);
         id->VER = SCCB_Read16(s_state->sensor.slv_addr, REG16_CHIDL);
         vTaskDelay(10 / portTICK_PERIOD_MS);
-        ESP_LOGD(TAG, "Camera PID=0x%02x VER=0x%02x", id->PID, id->VER);
+        ESP_LOGI(TAG, "Camera PID=0x%02x VER=0x%02x", id->PID, id->VER);
     } else if(s_state->sensor.slv_addr == 0x2a){
         id->PID = SCCB_Read16(s_state->sensor.slv_addr, 0x3000);
         id->VER = SCCB_Read16(s_state->sensor.slv_addr, 0x3001);
