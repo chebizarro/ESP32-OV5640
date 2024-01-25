@@ -42,10 +42,7 @@ static i2c_master_bus_handle_t bus_handle;
 
 int SCCB_Init(int pin_sda, int pin_scl)
 {
-    if (bus_handle) {
-      return 0;
-    }
-
+    
     ESP_LOGI(TAG, "pin_sda %d pin_scl %d\n", pin_sda, pin_scl);
 
     i2c_master_bus_config_t i2c_mst_config = {
@@ -67,6 +64,12 @@ int SCCB_Init(int pin_sda, int pin_scl)
     ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle));
 
     return 0;
+}
+
+void SCCB_Deinit()
+{
+    i2c_master_bus_rm_device(dev_handle);
+    i2c_del_master_bus(bus_handle);
 }
 
 uint8_t SCCB_Set_Device(uint8_t slave_addr)
@@ -103,12 +106,14 @@ uint8_t SCCB_Read(uint8_t slv_addr, uint8_t reg)
 
     SCCB_Set_Device(slv_addr);
 
+    ESP_LOGI(TAG, "Read %d", reg);
+
     esp_err_t err = i2c_master_transmit_receive(
         dev_handle,
         (const uint8_t *)&reg,
-        1,
+        2,
         &data,
-        1,
+        2,
         -1
     );
 
@@ -123,6 +128,8 @@ uint8_t SCCB_Write(uint8_t slv_addr, uint8_t reg, uint8_t data)
     uint8_t write_buffer[2] = { reg, data };
 
     SCCB_Set_Device(slv_addr);
+
+    ESP_LOGI(TAG, "Wrote %d", reg);
 
     esp_err_t ret = i2c_master_transmit(
         dev_handle,
@@ -148,9 +155,9 @@ uint8_t SCCB_Read16(uint8_t slv_addr, uint16_t reg)
     esp_err_t ret = i2c_master_transmit_receive(
         dev_handle,
         addr,
-        1,
+        2,
         &buffer,
-        sizeof(buffer),
+        2,
         -1
     );
 
@@ -163,6 +170,7 @@ uint8_t SCCB_Read16(uint8_t slv_addr, uint16_t reg)
 
 uint8_t SCCB_Write16(uint8_t slv_addr, uint16_t reg, uint8_t data)
 {
+    ESP_LOGI(TAG, "Write16 %d", reg);
 
     uint8_t write_buffer[2] = { reg, data };
 
@@ -176,7 +184,7 @@ uint8_t SCCB_Write16(uint8_t slv_addr, uint16_t reg, uint8_t data)
     );
 
     if(ret != ESP_OK) {
-        //ESP_LOGE(TAG, "SCCB_Write Failed addr:0x%02x, reg:0x%02x, data:0x%02x, ret:%d", slv_addr, reg, data, ret);
+        ESP_LOGE(TAG, "SCCB_Write Failed addr:0x%02x, reg:0x%02x, data:0x%02x, ret:%d", slv_addr, reg, data, ret);
     }
     return ret == ESP_OK ? 0 : -1;
 }

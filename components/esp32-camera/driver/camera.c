@@ -1453,6 +1453,7 @@ esp_err_t esp_camera_deinit()
     free(s_state);
     s_state = NULL;
     periph_module_disable(PERIPH_I2S0_MODULE);
+    SCCB_Deinit();
     return ESP_OK;
 }
 
