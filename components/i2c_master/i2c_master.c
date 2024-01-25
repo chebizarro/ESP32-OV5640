@@ -18,7 +18,7 @@
 #include "driver/i2c_master.h"
 #include <stdio.h>
 
-static i2c_master_bus_handle_t bus_handle;
+static i2c_master_bus_handle_t bus_handle = NULL;
 
 /**
   * @brief  初始化I2C主机
@@ -29,6 +29,9 @@ static i2c_master_bus_handle_t bus_handle;
   */
 void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num)
 {
+    if (bus_handle) {
+      return;
+    }
 
     i2c_master_bus_config_t i2c_mst_config = {
         .clk_source = I2C_CLK_SRC_DEFAULT,
@@ -42,7 +45,7 @@ void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num)
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
 }
 
-esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_bus_handle_t dev_handle)
+esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_dev_handle_t dev_handle)
 {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
@@ -63,14 +66,6 @@ esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_bus_handle_t dev_handl
 uint8_t I2C_ALIVE(uint8_t I2c_addr, uint8_t test_val)
 {
   int ret = 0;
-  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  i2c_master_start(cmd);
-  i2c_master_write_byte(cmd, (I2c_addr << 1)|WRITE_BIT, ACK_CHECK_EN);
-  i2c_master_write_byte(cmd, test_val, ACK_CHECK_EN);
-  i2c_master_stop(cmd);
-  ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 100/portTICK_PERIOD_MS);
-  i2c_cmd_link_delete(cmd);
-  I2c_Check_Err(ret);
   if(ret == ESP_OK) {
     return 0;
   }
