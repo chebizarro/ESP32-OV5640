@@ -34,7 +34,8 @@ esp_err_t ip5306_i2c_read(uint8_t address, uint8_t* result, uint8_t length) {
           dev_handle,
           (const uint8_t *)&address,
           1,
-          result, length,
+          result,
+          length,
           -1
         );
 
@@ -58,6 +59,11 @@ esp_err_t ip5306_i2c_read(uint8_t address, uint8_t* result, uint8_t length) {
   */
 uint8_t Ip5306_Check_Power(void)
 {
+
+    if(!dev_handle) {
+        I2C_Add_Device(IP5306_ADDR, &dev_handle);
+    }
+
     uint8_t data = 0;
     //Ip5306_I2c_Read(IP5306_CHECK_POWER, 1, &data);
     ip5306_i2c_read(IP5306_CHECK_POWER, &data, 1);

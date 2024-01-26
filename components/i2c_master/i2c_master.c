@@ -45,7 +45,7 @@ void I2c_Master_Init(uint8_t I2c_num, uint8_t sda_num, uint8_t scl_num)
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
 }
 
-esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_dev_handle_t dev_handle)
+esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_dev_handle_t *dev_handle)
 {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
@@ -53,7 +53,7 @@ esp_err_t I2C_Add_Device(uint16_t dev_address, i2c_master_dev_handle_t dev_handl
         .scl_speed_hz = I2C_MASTER_FREQ_HZ,
     };
 
-    return i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle);
+    return i2c_master_bus_add_device(bus_handle, &dev_cfg, dev_handle);
 }
 
 

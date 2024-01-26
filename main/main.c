@@ -45,7 +45,7 @@ static char TAG[] = "ESP32-CAM PSRAM test";
 #define MPU6886_TEST    0
 
 // 是否开启IP5306的测试  
-#define IP5306_TEST     0
+#define IP5306_TEST     1
     
 static void AppTask(void *pvParameter);
 static void Led_Task_Test(void *pvParameter);
