@@ -11,6 +11,7 @@
 #include <freertos/task.h>
 #include "sccb.h"
 #include <stdio.h>
+#include <string.h>
 #include "sdkconfig.h"
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
@@ -170,16 +171,17 @@ uint8_t SCCB_Read16(uint8_t slv_addr, uint16_t reg)
 
 uint8_t SCCB_Write16(uint8_t slv_addr, uint16_t reg, uint8_t data)
 {
-    ESP_LOGI(TAG, "Write16 %d", reg);
-
-    uint8_t write_buffer[2] = { reg, data };
+    int len = 3;
+    uint16_t reg_htons = LITTLETOBIG(reg);
+    uint8_t *addr = (uint8_t *)&reg_htons;
+    uint8_t write_buffer[3] = { addr[0], addr[1], data }; 
 
     SCCB_Set_Device(slv_addr);
 
     esp_err_t ret = i2c_master_transmit(
         dev_handle,
-        (const uint8_t *)&write_buffer,
-        2,
+        &write_buffer,
+        len,
         -1
     );
 
