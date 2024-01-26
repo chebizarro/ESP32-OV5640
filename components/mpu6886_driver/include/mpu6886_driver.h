@@ -8,7 +8,6 @@
 #define _MPU6886_DRIVER_H
 
 #include <stdio.h>
-#include "esp_log.h"
 #include "driver/i2c_master.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -60,7 +59,7 @@
 #define AtR    	0.0174533	
 #define Gyro_Gr	0.0010653
 
-float aRes, gRes;
+extern float aRes, gRes;
 
 enum Ascale {
 	AFS_2G = 0,

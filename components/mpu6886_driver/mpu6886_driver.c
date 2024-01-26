@@ -6,8 +6,6 @@
 
 #include "mpu6886_driver.h"
 #include "../i2c_master/include/i2c_master.h"
-#include "esp_log.h"
-#include "esp_err.h"
 #include "driver/i2c_master.h"
 
 enum Gscale Gyscale = GFS_2000DPS;
@@ -17,6 +15,7 @@ static const char *TAG = "MPU6886";
 
 static i2c_master_dev_handle_t dev_handle;
 
+float aRes, gRes = .0f;
 
 /**
   * @brief  MPU6886读n个字节
@@ -63,6 +62,8 @@ int32_t MPU6886_Init(void)
 {
     uint8_t tempdata[1];
     uint8_t regdata;
+
+    I2C_Add_Device(MPU6886_ADDRESS, &dev_handle);
 
     MPU6886I2C_Read_NBytes(MPU6886_WHOAMI, 1, tempdata);
     if (tempdata[0] != 0x19)
